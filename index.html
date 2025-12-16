@@ -1388,37 +1388,6 @@ async function loadDataFromGitHub() {
             download: true,
             header: true,
             skipEmptyLines: true,
-            worker: true, // 🔥 usa Web Worker
-            step: function (results) {
-                const row = results.data;
-
-                // Normalizar cabeçalhos (caso necessário)
-                const empregado = {
-                    'MAT.': row['MAT.'] || '',
-                    'NOME': row['NOME'] || '',
-                    'ÓRGÃO': row['ÓRGÃO'] || '',
-                    'CARGO': row['CARGO'] || '',
-                    'EMPRESA': row['EMPRESA'] || '',
-                    'CNPJ EMPRESA': row['CNPJ EMPRESA'] || '',
-                    'MÊS REFERÊNCIA': row['MÊS REFERÊNCIA'] || ''
-                };
-
-                // Extrair ANO do nome do arquivo
-                const anoMatch = CSV_ATUAL.match(/\d{4}/);
-                empregado.ANO = anoMatch ? anoMatch[0] : '';
-
-            async function loadDataFromGitHub() {
-    terceirizadosData = [];
-    filteredData = [];
-
-    const url = `${GITHUB_BASE_URL}${CSV_ATUAL}`;
-    console.log(`Carregando CSV mais recente (stream): ${url}`);
-
-    return new Promise((resolve, reject) => {
-        Papa.parse(url, {
-            download: true,
-            header: true,
-            skipEmptyLines: true,
             worker: true,
 
             step: function (results) {
@@ -1487,37 +1456,7 @@ async function loadDataFromGitHub() {
         });
     });
 }
-   
-                            
-            // Encontrar o ano mais recente
-            const years = [...new Set(terceirizadosData.map(e => parseInt(e.ANO)))].sort((a, b) => b - a);
-            if (years.length > 0) {
-                currentYear = years[0];
-            }
-            
-            // Encontrar o mês mais recente para o ano atual
-            const currentYearData = terceirizadosData.filter(e => e.ANO === currentYear.toString());
-            if (currentYearData.length > 0) {
-                const months = [...new Set(currentYearData.map(e => e.MES))].filter(Boolean);
-                if (months.length > 0) {
-                    // Converter para número, ordenar e pegar o maior
-                    const numericMonths = months.map(m => parseInt(m)).sort((a, b) => b - a);
-                    currentMonth = String(numericMonths[0]).padStart(2, '0');
-                }
-            }
-            
-            console.log(`Ano atual configurado: ${currentYear}, Mês atual: ${currentMonth}`);
-        }
 
-        function formatarCNPJ(cnpj) {
-            cnpj = cnpj.replace(/\D/g, '');
-            
-            if (cnpj.length === 14) {
-                return cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5");
-            }
-            
-            return cnpj;
-        }
 
         // ==================== CONFIGURAR EVENT LISTENERS ====================
         function setupEventListeners() {
