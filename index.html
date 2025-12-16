@@ -1407,40 +1407,68 @@ async function loadDataFromGitHub() {
                 const anoMatch = CSV_ATUAL.match(/\d{4}/);
                 empregado.ANO = anoMatch ? anoMatch[0] : '';
 
-                // Extrair MÊS da data
-                if (empregado['MÊS REFERÊNCIA']) {
-                    const partes = empregado['MÊS REFERÊNCIA'].split('/');
-                    if (partes.length >= 2) {
-                        empregado.MES = partes[1].padStart(2, '0');
-                    }
-                }
 
-                if (
-                    empregado.ANO === currentYear.toString() &&
-                    empregado.MES === currentMonth
-                ) {
-                    terceirizadosData.push(empregado);
-                }
-            },
-            complete: function () {
-                console.log(`CSV carregado: ${terceirizadosData.length} registros`);
+            step: function (results) {
+    const row = results.data;
 
-                // Filtra apenas o período atual
-                filteredData = terceirizadosData.filter(e =>
-                    e.ANO === currentYear.toString() &&
-                    e.MES === currentMonth
-                );
+    const empregado = {
+        'MAT.': row['MAT.'] || '',
+        'NOME': row['NOME'] || '',
+        'ÓRGÃO': row['ÓRGÃO'] || '',
+        'CARGO': row['CARGO'] || '',
+        'EMPRESA': row['EMPRESA'] || '',
+        'CNPJ EMPRESA': row['CNPJ EMPRESA'] || '',
+        'MÊS REFERÊNCIA': row['MÊS REFERÊNCIA'] || ''
+    };
 
-                resolve();
-            },
-            error: function (error) {
-                console.error('Erro ao carregar CSV:', error);
-                reject(error);
-            }
-        });
-    });
-}
-            
+    // Extrair ANO do nome do arquivo
+    const anoMatch = CSV_ATUAL.match(/\d{4}/);
+    empregado.ANO = anoMatch ? anoMatch[0] : '';
+
+    // Extrair MÊS da data
+    if (empregado['MÊS REFERÊNCIA']) {
+        const partes = empregado['MÊS REFERÊNCIA'].split('/');
+        if (partes.length >= 2) {
+            empregado.MES = partes[1].padStart(2, '0');
+        }
+    }
+
+    // 🔹 NÃO FILTRA AQUI
+    terceirizadosData.push(empregado);
+},
+
+complete: function () {
+    console.log(`CSV carregado: ${terceirizadosData.length} registros`);
+
+    // 🔹 Descobrir o mês mais recente existente NO CSV
+    const mesesDisponiveis = [...new Set(
+        terceirizadosData
+            .map(e => e.MES)
+            .filter(Boolean)
+    )];
+
+    if (mesesDisponiveis.length === 0) {
+        console.error('Nenhum mês válido encontrado no CSV');
+        resolve();
+        return;
+    }
+
+    mesesDisponiveis.sort((a, b) => parseInt(b) - parseInt(a));
+    currentMonth = mesesDisponiveis[0];
+
+    console.log('Mês mais recente no CSV:', currentMonth);
+
+    // 🔹 AGORA SIM filtrar
+    filteredData = terceirizadosData.filter(e =>
+        e.ANO === currentYear.toString() &&
+        e.MES === currentMonth
+    );
+
+    console.log(`Registros do mês atual: ${filteredData.length}`);
+
+    resolve();
+},
+                
             // Encontrar o ano mais recente
             const years = [...new Set(terceirizadosData.map(e => parseInt(e.ANO)))].sort((a, b) => b - a);
             if (years.length > 0) {
