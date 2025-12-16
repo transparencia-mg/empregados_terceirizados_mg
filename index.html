@@ -1283,12 +1283,12 @@
                 </a>
             </p>
         </div>
+    </footer>
 
-            <!-- ==================== LOADING OVERLAY ==================== -->
+                <!-- ==================== LOADING OVERLAY ==================== -->
     <div class="loading-overlay" id="loadingOverlay">
         <div class="spinner"></div>
         </div>
-    </footer>
 
         <!-- ==================== SCRIPTS ==================== -->
 
@@ -1415,13 +1415,15 @@ async function loadDataFromGitHub() {
                     }
                 }
 
-                terceirizadosData.push(empregado);
+                if (
+                    empregado.ANO === currentYear.toString() &&
+                    empregado.MES === currentMonth
+                ) {
+                    terceirizadosData.push(empregado);
+                }
             },
             complete: function () {
                 console.log(`CSV carregado: ${terceirizadosData.length} registros`);
-
-                // Define ano e mês atuais com base nos dados
-                updateCurrentYearAndMonth();
 
                 // Filtra apenas o período atual
                 filteredData = terceirizadosData.filter(e =>
@@ -1438,9 +1440,6 @@ async function loadDataFromGitHub() {
         });
     });
 }
-
-        function updateCurrentYearAndMonth() {
-            if (terceirizadosData.length === 0) return;
             
             // Encontrar o ano mais recente
             const years = [...new Set(terceirizadosData.map(e => parseInt(e.ANO)))].sort((a, b) => b - a);
