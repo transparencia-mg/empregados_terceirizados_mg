@@ -1325,16 +1325,20 @@
         
         // URLs dos CSVs no GitHub
         const GITHUB_BASE_URL = 'https://raw.githubusercontent.com/transparencia-mg/empregados_terceirizados/main/data/';
-        <!-- INICIO LISTA CSV -->
-        // CSV mais recente (sempre o último da lista gerada pelo Python)
-const CSV_ATUAL = CSV_FILES[CSV_FILES.length - 1];
+
+        // INICIO LISTA CSV
+        const CSV_FILES = [
             'terceirizados_2021.csv',
             'terceirizados_2022.csv',
             'terceirizados_2023.csv',
             'terceirizados_2024.csv',
             'terceirizados_2025.csv'
         ];
-        <!-- FIM LISTA CSV -->
+        // FIM LISTA CSV
+
+        // CSV mais recente (sempre o último da lista)
+        const CSV_ATUAL = CSV_FILES[CSV_FILES.length - 1];
+
         
         // ==================== FUNÇÕES DE INICIALIZAÇÃO ====================
         document.addEventListener('DOMContentLoaded', async function() {
