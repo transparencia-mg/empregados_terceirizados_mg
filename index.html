@@ -1408,37 +1408,17 @@
                 const anoMatch = CSV_ATUAL.match(/\d{4}/);
                 empregado.ANO = anoMatch ? anoMatch[0] : '';
 
-                // Extrair mês (dd/mm/aaaa, mm/aaaa, yyyy-mm, yyyy-mm-dd)
-                const dataRef =
-                    row['MÊS REFERÊNCIA'] ||
-                    row['MES REFERENCIA'] ||
-                    row['MES_REFERENCIA'] ||
-                    row['MES_REF'] ||
-                    row['MES_ANO'] ||
-                    '';
+                const dataRef = row['MÊS REFERÊNCIA'] || '';
 
-                if (dataRef) {
-                    let mesExtraido = null;
-
-                    if (dataRef.includes('/')) {
-                        const partes = dataRef.split('/');
-                        if (partes.length === 3) {
-                            mesExtraido = partes[1]; // dd/mm/aaaa
-                        } else if (partes.length === 2) {
-                            mesExtraido = partes[0]; // mm/aaaa
-                        }
-                    } else if (dataRef.includes('-')) {
-                        const partes = dataRef.split('-');
-                        if (partes.length >= 2) {
-                            mesExtraido = partes[1]; // yyyy-mm
-                        }
-                    }
-
-                    if (mesExtraido) {
-                        empregado.MES = mesExtraido.padStart(2, '0');
+                if (dataRef && dataRef.includes('/')) {
+                    const partes = dataRef.split('/');
+                    if (partes.length === 2) {
+                        // MM/AAAA
+                        empregado.MES = partes[0].padStart(2, '0');
+                        empregado.ANO = partes[1];
                     }
                 }
-
+                
                 // ✅ ISSO É O MAIS IMPORTANTE
                 terceirizadosData.push(empregado);
             },
