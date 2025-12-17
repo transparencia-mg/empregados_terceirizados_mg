@@ -1118,7 +1118,7 @@
                                     <th onclick="sortTable('empregados', 'orgao')">Órgão <span class="sort-icon">▼</span></th>
                                     <th onclick="sortTable('empregados', 'cargo')">Cargo <span class="sort-icon">▼</span></th>
                                     <th onclick="sortTable('empregados', 'empresa')">Empresa <span class="sort-icon">▼</span></th>
-                                    <th onclick="sortTable('empregados', 'cnpj')">CNPJ Empresa <span class="sort-icon">▼</span></th>
+                                    <th onclick="sortTable('empregados', 'cnpj_empresa')">CNPJ Empresa <span class="sort-icon">▼</span></th>
                                     <th onclick="sortTable('empregados', 'mes_referencia')">Mês Referência <span class="sort-icon">▼</span></th>
                                 </tr>
                             </thead>
@@ -2018,7 +2018,7 @@
             const rowsHTML = currentData.map(item => `
                 <tr>
                     <td>
-                        <a href="#" class="orgao-link" onclick="filtrarPorOrgao('${item.orgao.replace(/'/g, "\\'")}')">
+                        <a href="#" class="orgao-link" onclick="filtrarPorOrgao('${JSON.stringify(item.orgao)})"
                             <strong>${item.orgao}</strong>
                         </a>
                     </td>
