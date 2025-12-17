@@ -1390,22 +1390,28 @@
             skipEmptyLines: true,
             worker: true,
 
+	beforeFirstChunk: function(chunk) {
+        	// Remove BOM UTF-8 se existir
+        	return chunk.replace(/^\uFEFF/, '');
+    	},
+
             step: function (results) {
                 const row = results.data;
 
                 const empregado = {
-                    matricula: row['matricula'] || '',
-    		    nome: row['nome'] || '',
-    		    orgao: row['orgao'] || '',
-    		    cargo: row['cargo'] || '',
-    		    empresa: row['empresa'] || '',
-    		    cnpj_empresa: row['cnpj_empresa'] || '',
-    		    mes_referencia: row['mes_referencia'] || ''
+                    matricula: row.matricula || '',
+    		    nome: row.nome || '',
+    		    orgao: row.orgao || '',
+    		    cargo: row.cargo || '',
+    		    empresa: row.empresa || '',
+    		    cnpj_empresa: row.cnpj_empresa || '',
+    		    mes_referencia: row.mes_referencia || ''
                 };
 
 
-		if (empregado.mes_referencia) {
-    		    const [mesAbrev, anoAbrev] = empregado.mes_referencia.split('-');
+		// converter jan-25 → MES / ANO
+        	if (empregado.mes_referencia.includes('-')) {
+            		const [mesAbrev, anoAbrev] = empregado.mes_referencia.split('-');
 
     		const meses = {
         	   jan: '01', fev: '02', mar: '03', abr: '04',
@@ -1417,11 +1423,15 @@
     		empregado.ANO = `20${anoAbrev}`;
 		}
 
-                // Ano pelo nome do arquivo
-                const anoMatch = CSV_ATUAL.match(/\d{4}/);
-                empregado.ANO = anoMatch ? anoMatch[0] : '';
+		terceirizadosData.push(empregado);
+    	},
 
-                const dataRef = (row['MÊS REFERÊNCIA'] || '').toString().trim();
+    	complete: function () {
+        finalizarCarga();
+    	}
+});
+
+            const dataRef = (row.mes_referencia || '').toString().trim();
 
             if (dataRef && dataRef.includes('/')) {
                     const partes = dataRef.split('/').map(p => p.trim());
@@ -1711,12 +1721,12 @@
                     }
                     
                     // Filtro por órgão
-                    if (orgao !== 'all' && empregado['ÓRGÃO'] !== orgao) {
+                    if (orgao !== 'all' && empregado.orgao !== orgao) {
                         return false;
                     }
                     
                     // Filtro por cargo
-                    if (cargo !== 'all' && empregado['CARGO'] !== cargo) {
+                    if (cargo !== 'all' && empregado.cargo !== cargo) {
                         return false;
                     }
                     
@@ -1904,11 +1914,11 @@
             // Agrupar por órgão e cargo
             const grupos = {};
             filteredData.forEach(empregado => {
-                const key = `${empregado['ÓRGÃO']}|${empregado['CARGO']}`;
+                const key = `${empregado.orgao}|${empregado.cargo]}`;
                 if (!grupos[key]) {
                     grupos[key] = {
-                        orgao: empregado['ÓRGÃO'],
-                        cargo: empregado['CARGO'],
+                        orgao: empregado.orgao],
+                        cargo: empregado.cargo,
                         count: 0,
                         empregados: []
                     };
@@ -2011,7 +2021,7 @@
         window.changePageDashboard1 = function(page) {
             const grupos = {};
             filteredData.forEach(empregado => {
-                const key = `${empregado['ÓRGÃO']}|${empregado['CARGO']}`;
+                const key = `${empregado.orgao}|${empregado.cargo}`;
                 if (!grupos[key]) {
                     grupos[key] = { empregados: [] };
                 }
@@ -2047,10 +2057,10 @@
             // Agrupar por órgão e pegar top 8
             const grupos = {};
             filteredData.forEach(empregado => {
-                if (!grupos[empregado['ÓRGÃO']]) {
-                    grupos[empregado['ÓRGÃO']] = 0;
+                if (!grupos[empregado.orgao]) {
+                    grupos[empregado.orgao] = 0;
                 }
-                grupos[empregado['ÓRGÃO']]++;
+                grupos[empregado.orgao]++;
             });
             
             const orgaosArray = Object.entries(grupos)
@@ -2119,10 +2129,10 @@
             // Agrupar por cargo e pegar top 8
             const grupos = {};
             filteredData.forEach(empregado => {
-                if (!grupos[empregado['CARGO']]) {
-                    grupos[empregado['CARGO']] = 0;
+                if (!grupos[empregado.cargo]) {
+                    grupos[empregado.cargo] = 0;
                 }
-                grupos[empregado['CARGO']]++;
+                grupos[empregado.cargo]++;
             });
             
             const cargosArray = Object.entries(grupos)
@@ -2184,10 +2194,10 @@
             // Agrupar por empresa e pegar top 8
             const grupos = {};
             filteredData.forEach(empregado => {
-                if (!grupos[empregado['EMPRESA']]) {
-                    grupos[empregado['EMPRESA']] = 0;
+                if (!grupos[empregado.empresa]) {
+                    grupos[empregado.empresa] = 0;
                 }
-                grupos[empregado['EMPRESA']]++;
+                grupos[empregado.empresa]++;
             });
             
             const empresasArray = Object.entries(grupos)
@@ -2431,11 +2441,11 @@
             // Agrupar por órgão e cargo
             const grupos = {};
             filteredData.forEach(empregado => {
-                const key = `${empregado['ÓRGÃO']}|${empregado['CARGO']}`;
+                const key = `${empregado.orgao}|${empregado.orgao}`;
                 if (!grupos[key]) {
                     grupos[key] = {
-                        orgao: empregado['ÓRGÃO'],
-                        cargo: empregado['CARGO'],
+                        orgao: empregado.orgao,
+                        cargo: empregado.cargo,
                         count: 0
                     };
                 }
