@@ -1391,9 +1391,8 @@
             download: true,
             header: true,
             skipEmptyLines: true,
-            worker: true,
+            worker: false, // ← desabilita o worker
             beforeFirstChunk: function(chunk) {
-                // Remove BOM UTF-8 se existir
                 return chunk.replace(/^\uFEFF/, '');
             },
             step: function (results) {
