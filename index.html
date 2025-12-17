@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+    <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
@@ -1316,7 +1316,6 @@
         let itemsPerPageDashboard1 = 50;
         let itemsPerPageDashboard2 = 50;
         let charts = {};
-        let currentYear = new Date().getFullYear();
         let currentMonth = String(new Date().getMonth() + 1).padStart(2, '0');
         
         const chartColors = {
@@ -1426,25 +1425,43 @@
             complete: function () {
                 console.log(`CSV carregado: ${terceirizadosData.length} registros`);
 
-                const mesesDisponiveis = [...new Set(
-                    terceirizadosData.map(e => e.MES).filter(Boolean)
-                )];
+            // Descobrir o ANO mais recente presente no CSV
+            const anosDisponiveis = [...new Set(
+                terceirizadosData.map(e => e.ANO).filter(Boolean)
+            )].sort((a, b) => parseInt(b) - parseInt(a));
 
-                if (mesesDisponiveis.length === 0) {
-                    console.error('Nenhum mês válido encontrado no CSV');
-                    resolve();
-                    return;
-                }
+            if (anosDisponiveis.length === 0) {
+                console.error('Nenhum ano válido encontrado no CSV');
+                resolve();
+                return;
+            }
 
-                mesesDisponiveis.sort((a, b) => parseInt(b) - parseInt(a));
-                currentMonth = mesesDisponiveis[0];
+            currentYear = anosDisponiveis[0];
 
-                filteredData = terceirizadosData.filter(e =>
-                    e.ANO === currentYear.toString() &&
-                    e.MES === currentMonth
-                );
+            // Descobrir o MÊS mais recente do ano atual
+            const mesesDisponiveis = [...new Set(
+                terceirizadosData
+                    .filter(e => e.ANO === currentYear)
+                    .map(e => e.MES)
+                    .filter(Boolean)
+            )].sort((a, b) => parseInt(b) - parseInt(a));
 
-                console.log(`Registros filtrados: ${filteredData.length}`);
+            if (mesesDisponiveis.length === 0) {
+                console.error('Nenhum mês válido encontrado para o ano', currentYear);
+                resolve();
+                return;
+            }
+
+            currentMonth = mesesDisponiveis[0];
+
+            // Filtrar período atual corretamente
+            filteredData = terceirizadosData.filter(e =>
+                e.ANO === currentYear &&
+                e.MES === currentMonth
+            );
+
+            console.log(`Período atual: ${currentMonth}/${currentYear}`);
+            console.log(`Registros filtrados: ${filteredData.length}`);
                 resolve();
             },
 
