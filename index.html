@@ -977,7 +977,7 @@
         <!-- ==================== CONTEÚDO DAS ABAS ==================== -->
         <div class="tab-content" id="dashboardTabsContent">
             
-            <!-- ==================== DASHBOARD 1: VISÃO GERAL POR ÓRGÃO ==================== -->
+            <!-- ==================== DASHBOARD 1: VISÃO GERAL ==================== -->
             <div class="tab-pane fade show active" id="dashboard1" role="tabpanel">
                 
                 <!-- Filtros Dashboard 1 -->
@@ -1077,7 +1077,7 @@
                 <!-- Tabela Dashboard 1 - AGORA APENAS POR ÓRGÃO -->
                 <div class="table-container">
                     <div class="table-header">
-                        <h3 class="table-title">Visão Geral por Órgão</h3>
+                        <h3 class="table-title">Visão Geral</h3>
                         <div class="d-flex align-items-center gap-3 ms-auto">
                             <div class="items-per-page">
                                 <span>Itens por página:</span>
@@ -1251,7 +1251,6 @@
                                     <th data-sort="cargo" data-order="asc" onclick="sortTable('empregados', 'cargo')">Cargo <span class="sort-icon">▼</span></th>
                                     <th data-sort="empresa" data-order="asc" onclick="sortTable('empregados', 'empresa')">Empresa <span class="sort-icon">▼</span></th>
                                     <th data-sort="cnpj_empresa" data-order="asc" onclick="sortTable('empregados', 'cnpj_empresa')">CNPJ Empresa <span class="sort-icon">▼</span></th>
-                                    <th data-sort="mes_referencia" data-order="desc" onclick="sortTable('empregados', 'mes_referencia')">Mês Referência <span class="sort-icon">▼</span></th>
                                     <th class="actions-column">Ações</th>
                                 </tr>
                             </thead>
@@ -1694,13 +1693,19 @@
 
                             // Conversão de formato "jan-25" em mês/ano
                             if (empregado.mes_referencia) {
-                                const mesRef = empregado.mes_referencia.toLowerCase().trim();
-                                if (mesRef.includes('-')) {
-                                    const [mesAbrev, anoAbrev] = mesRef.split('-');
-                                    empregado.MES_NUM = mesesAbreviados[mesAbrev] || '';
-                                    empregado.ANO = '20' + anoAbrev;
-                                }
-                            }
+    				const mesRef = empregado.mes_referencia.toLowerCase().trim();
+
+    				let separador = null;
+    				if (mesRef.includes('/')) separador = '/';
+    				else if (mesRef.includes('-')) separador = '-';
+
+    				if (separador) {
+        				const [mesAbrev, anoAbrev] = mesRef.split(separador);
+
+        				empregado.MES_NUM = mesesAbreviados[mesAbrev] || '';
+        				empregado.ANO = anoAbrev.length === 2 ? '20' + anoAbrev : anoAbrev;
+    				}
+			}
 
                             return empregado;
                         }).filter(e => e.mes_referencia); // Filtrar registros válidos
@@ -1853,21 +1858,6 @@
                 }
             });
             
-            // Atualizar dados periodicamente (a cada 5 minutos)
-            setInterval(async () => {
-                console.log('Verificando atualizações no GitHub...');
-                try {
-                    // Recarregar apenas o ano atual para verificar atualizações
-                    await loadYearData(currentYear);
-                    updateDataAtualizacao();
-                    updateFilterOptions();
-                    updateDashboard1();
-                    updateDashboard2();
-                    console.log('Dados atualizados com sucesso!');
-                } catch (error) {
-                    console.error('Erro ao atualizar dados:', error);
-                }
-            }, 5 * 60 * 1000);
         }
 
         // ==================== FUNÇÕES DE UTILIDADE ====================
