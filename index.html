@@ -946,18 +946,6 @@
 </head>
 <body>
 
-    inicio = "<!-- INICIO_DADOS_AUTOMATICOS -->"
-    fim = "<!-- FIM_DADOS_AUTOMATICOS -->"
-
-    if inicio not in html or fim not in html:
-    raise RuntimeError(
-        "Marcadores não encontrados no index.html.\n"
-        "Certifique-se de que existem exatamente:\n"
-        "<!-- INICIO_DADOS_AUTOMATICOS -->\n"
-        "<!-- FIM_DADOS_AUTOMATICOS -->"
-    )
-
-    html = html.split(inicio)[0] + inicio + "\n" + novo + "\n" + fim + html.split(fim)[1]
 
     <!-- ==================== HEADER PRINCIPAL ==================== -->
     <header class="main-header">
