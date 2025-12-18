@@ -1696,17 +1696,19 @@
         }
 
         // ==================== CALCULAR HASH DOS DADOS ====================
-        async function calculateDataHash(data) {
-            if (!data || data.length === 0) return null;
-            
-            // Criar uma string simples com os dados para hash
-            const dataString = data.slice(0, 100).map(item => 
-                `${item.matricula}|${item.nome}|${item.orgao}|${item.empresa}`
-            ).join('|');
-            
-            // Hash simples baseado no comprimento e primeiro caractere
-            return btoa(dataString.length + dataString.substring(0, 50));
-        }
+    async function calculateDataHash(data) {
+    if (!data || data.length === 0) return null;
+
+    const dataString = data.slice(0, 100).map(item =>
+        `${item.matricula}|${item.nome}|${item.orgao}|${item.empresa}`
+    ).join('|');
+
+    // 🔑 Conversão UTF-8 → Latin1 antes do btoa
+    return btoa(unescape(encodeURIComponent(
+        dataString.length + dataString.substring(0, 50)
+    )));
+    }
+
 
         // ==================== CARREGAR DADOS DO GITHUB ====================
         async function loadYearData(year) {
