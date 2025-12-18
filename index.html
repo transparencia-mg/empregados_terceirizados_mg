@@ -911,6 +911,37 @@
                 display: none;
             }
         }
+
+        /* ==================== LINK CLICÁVEL ==================== */
+    .orgao-link {
+    color: var(--primary-dark);
+    text-decoration: none;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-block;
+    padding: 2px 4px;
+    border-radius: 4px;
+    font-size: 13px;
+    border-bottom: 1px dashed rgba(41, 67, 90, 0.3);
+    }
+
+    .orgao-link:hover {
+    color: var(--accent-red);
+    background-color: rgba(185, 60, 66, 0.05);
+    border-bottom: 1px solid var(--accent-red);
+    transform: translateY(-1px);
+    }
+
+    .orgao-link:active {
+    transform: translateY(0);
+    }
+
+    /* Para a tabela específica da visão geral */
+    #visaoGeralTable .orgao-link {
+    padding: 4px 8px;
+    margin: -4px -8px;
+    }
     </style>
 </head>
 <body>
@@ -2484,8 +2515,16 @@
             const rowsHTML = currentData.map(item => {
                 return `
                 <tr>
-                    <td>${item.orgao_nome}</td>
-                    <td>${item.orgao_sigla}</td>
+                    <td>
+                        <a href="#" onclick="filtrarPorOrgao('${item.orgao_sigla}')" class="orgao-link" title="Clique para filtrar por este órgão">
+                            ${item.orgao_nome}
+                        </a>
+                    </td>
+                    <td>
+                        <a href="#" onclick="filtrarPorOrgao('${item.orgao_sigla}')" class="orgao-link" title="Clique para filtrar por este órgão">
+                            ${item.orgao_sigla}
+                        </a>
+                    </td>
                     <td>${item.count.toLocaleString('pt-BR')}</td>
                 </tr>
             `}).join('');
@@ -3184,28 +3223,53 @@
 
         // ==================== FUNÇÕES GLOBAIS E UTILITÁRIOS ====================
 
-        // Filtrar por órgão (ao clicar na tabela)
-        window.filtrarPorOrgao = function(orgao) {
-            // Mudar para a aba de Consulta Individual
-            const tabElement = document.getElementById('dashboard2-tab');
-            if (tabElement) {
-                const tab = new bootstrap.Tab(tabElement);
-                tab.show();
+window.filtrarPorOrgao = function(orgao) {
+    console.log('Filtrando por órgão:', orgao);
+    
+    try {
+        // Mudar para a aba de Consulta Individual
+        const tabElement = document.getElementById('dashboard2-tab');
+        if (tabElement) {
+            // Usar Bootstrap Tab para mudar de aba
+            const tab = new bootstrap.Tab(tabElement);
+            tab.show();
+            
+            // Aguardar a transição da aba
+            setTimeout(() => {
+                // Preencher o campo do órgão no Dashboard 2
+                const orgaoElement = document.getElementById('orgaoDashboard2');
+                if (orgaoElement) {
+                    orgaoElement.value = orgao;
+                }
                 
-                // Aguardar a transição da aba
-                setTimeout(() => {
-                    // Preencher o campo do órgão no Dashboard 2
-                    const orgaoElement = document.getElementById('orgaoDashboard2');
-                    if (orgaoElement) {
-                        orgaoElement.value = orgao;
-                    }
-                    
-                    // Aplicar o filtro
-                    applyFilters('dashboard2');
-                }, 300);
-            }
-        };
-
+                // Limpar outros filtros
+                document.getElementById('nomeEmpregado').value = '';
+                document.getElementById('cargoDashboard2').value = '';
+                document.getElementById('empresaDashboard2').value = '';
+                document.getElementById('matriculaDashboard2').value = '';
+                document.getElementById('searchEmpregados').value = '';
+                
+                // Configurar o ano e mês atuais
+                document.getElementById('anoDashboard2').value = currentYear;
+                document.getElementById('mesDashboard2').value = currentMonth;
+                
+                // Aplicar o filtro
+                applyFilters('dashboard2');
+                
+                // Rolar para a tabela
+                const tableContainer = document.querySelector('#dashboard2 .table-container');
+                if (tableContainer) {
+                    tableContainer.scrollIntoView({ behavior: 'smooth' });
+                }
+            }, 350); // Tempo maior para garantir que a aba mudou
+        } else {
+            console.error('Elemento da aba não encontrado');
+        }
+    } catch (error) {
+        console.error('Erro ao filtrar por órgão:', error);
+        showError('Erro ao filtrar por órgão. Por favor, tente novamente.');
+    }
+};
         // ==================== FUNÇÕES DE ORDENAÇÃO ====================
         window.sortTable = function(tableType, column) {
             if (tableType === 'visaoGeral') {
