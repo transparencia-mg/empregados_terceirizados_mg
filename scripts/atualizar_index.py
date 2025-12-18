@@ -1,25 +1,57 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from pathlib import Path
 
-DATA_DIR = Path("data")
-INDEX_FILE = Path("index.html")
+INDEX = Path("index.html")
 
-arquivos = sorted(DATA_DIR.glob("terceirizados_*.csv"))
+inicio = "<!-- INICIO_DADOS_AUTOMATICOS -->"
+fim = "<!-- FIM_DADOS_AUTOMATICOS -->"
 
-lista_js = ",\n    ".join(f"'{f.name}'" for f in arquivos)
+novo = """
+<script>
+console.log("Bloco atualizado automaticamente");
+</script>
+""".strip()
 
-html = INDEX_FILE.read_text(encoding="utf-8")
+html = INDEX.read_text(encoding="utf-8")
 
-inicio = "// INICIO LISTA CSV"
-fim = "// FIM LISTA CSV"
+# ===============================
+# VALIDAÇÃO OBRIGATÓRIA
+# ===============================
 
-novo = f"""{inicio}
-const CSV_FILES = [
-    {lista_js}
-];
-{fim}"""
+if inicio not in html:
+    raise RuntimeError(
+        "ERRO: marcador não encontrado:\n"
+        "<!-- INICIO_DADOS_AUTOMATICOS -->"
+    )
 
-html = html.split(inicio)[0] + novo + html.split(fim)[1]
+if fim not in html:
+    raise RuntimeError(
+        "ERRO: marcador não encontrado:\n"
+        "<!-- FIM_DADOS_AUTOMATICOS -->"
+    )
 
-INDEX_FILE.write_text(html, encoding="utf-8")
+if html.index(inicio) > html.index(fim):
+    raise RuntimeError(
+        "ERRO: marcador INICIO está depois do FIM"
+    )
 
-print("index.html atualizado com sucesso.")
+# ===============================
+# SUBSTITUIÇÃO SEGURA
+# ===============================
+
+antes = html.split(inicio)[0]
+depois = html.split(fim)[1]
+
+html_final = (
+    antes
+    + inicio + "\n"
+    + novo + "\n"
+    + fim
+    + depois
+)
+
+INDEX.write_text(html_final, encoding="utf-8")
+
+print("index.html atualizado com sucesso")
