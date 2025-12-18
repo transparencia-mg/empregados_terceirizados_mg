@@ -4,35 +4,45 @@ on:
   push:
     paths:
       - "data/*.csv"
+      - "scripts/*.py"
 
 jobs:
   publish:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v4
+      - name: Setup Python
+        uses: actions/setup-python@v4
         with:
           python-version: "3.11"
 
-      - run: pip install requests
+      - name: Instalar dependências
+        run: pip install requests
 
+      # =========================
+      # 1. Gerar datapackage
+      # =========================
       - name: Gerar datapackage
         run: python scripts/gerar_datapackage.py
 
+      # =========================
+      # 2. Commit datapackage
+      # =========================
       - name: Commit datapackage
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
           git add datapackage/datapackage.json
-          git commit -m "Atualiza datapackage"
+          git commit -m "Atualiza datapackage" || echo "Nada para commitar"
           git push
-        continue-on-error: true
 
+      # =========================
+      # 3. Publicar no CKAN
+      # =========================
       - name: Publicar no CKAN
         env:
           CKAN_API_KEY: ${{ secrets.CKAN_API_KEY }}
         run: python scripts/publicar_ckan.py
-
-
