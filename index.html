@@ -1670,7 +1670,7 @@
                     skipEmptyLines: true,
                     encoding: 'ISO-8859-1',
                     complete: function (results) {
-                        const data = results.data.map(row => {
+                        const data = results.data.map(row => ({
                                 ...row
         		}));
 
