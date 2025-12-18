@@ -73,7 +73,10 @@ jobs:
         run: |
           dpckan \
             --datastore \
+            --organization controladoria-geral-do-estado-cge \
+            --dataset-name empregados-terceirizados \
             --datapackage datapackage/datapackage.json \
             --ckan-host "$CKAN_HOST" \
             --ckan-key "$CKAN_KEY" \
             dataset update
+
