@@ -5,6 +5,50 @@ from pathlib import Path
 DATA_DIR = Path("data")
 OUTPUT = Path("datapackage/datapackage.json")
 
+# =========================
+# Schema padrão dos CSVs
+# =========================
+SCHEMA_FIELDS = [
+    {
+        "name": "matricula",
+        "title": "Matrícula do empregado terceirizado",
+        "type": "string",
+        "description": "Identificador do empregado terceirizado"
+    },
+    {
+        "name": "nome",
+        "title": "Nome completo do empregado terceirizado",
+        "type": "string"
+    },
+    {
+        "name": "orgao",
+        "title": "Órgão de trabalho do empregado",
+        "type": "string"
+    },
+    {
+        "name": "cargo",
+        "title": "Cargo exercido pelo empregado",
+        "type": "string"
+    },
+    {
+        "name": "empresa",
+        "title": "Nome da empresa terceirizada",
+        "type": "string"
+    },
+    {
+        "name": "cnpj_empresa",
+        "title": "CNPJ da empresa terceirizada",
+        "type": "string",
+        "description": "CNPJ com 14 dígitos, sem formatação"
+    },
+    {
+        "name": "mes_referencia",
+        "title": "Mês de referência do contrato",
+        "type": "string",
+        "description": "Mês do contrato no formato abreviado (ex: jan-25)"
+    }
+]
+
 resources = []
 
 for csv in sorted(DATA_DIR.glob("terceirizados_*.csv")):
@@ -17,7 +61,11 @@ for csv in sorted(DATA_DIR.glob("terceirizados_*.csv")):
         "format": "csv",
         "mediatype": "text/csv",
         "encoding": "utf-8",
-        "description": f"Dados de empregados terceirizados do ano de {ano}"
+        "description": f"Dados de empregados terceirizados do ano de {ano}",
+        "schema": {
+            "fields": SCHEMA_FIELDS,
+            "primaryKey": ["matricula", "mes_referencia"]
+        }
     })
 
 datapackage = {
@@ -40,5 +88,6 @@ OUTPUT.write_text(
     encoding="utf-8"
 )
 
-print("datapackage.json gerado com sucesso.")
+print("datapackage.json gerado com schema das colunas.")
+
 
