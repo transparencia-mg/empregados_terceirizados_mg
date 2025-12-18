@@ -1,4 +1,4 @@
-name: Atualizar dados e publicar CKAN
+name: Gerar datapackage e publicar no CKAN
 
 on:
   push:
@@ -10,34 +10,29 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout do repositório
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Configurar Python
-        uses: actions/setup-python@v4
+      - uses: actions/setup-python@v4
         with:
           python-version: "3.11"
 
-      - name: Instalar dependências
-        run: |
-          pip install -r requirements.txt
-
-      - name: Rodar scripts de preparação
-        run: |
-          python scripts/normalizar_mes_referencia.py
-          python scripts/atualizar_index.py
+      - run: pip install requests
 
       - name: Gerar datapackage
         run: python scripts/gerar_datapackage.py
 
+      - name: Commit datapackage
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add datapackage/datapackage.json
+          git commit -m "Atualiza datapackage"
+          git push
+        continue-on-error: true
+
       - name: Publicar no CKAN
         env:
-          CKAN_API_KEY: ${{ secrets.CKAN_KEY_KBOMFA }}
-	  CKAN_API_KEY: ${{ secrets.CKAN_KEY_SILVIANAFARIA }}
+          CKAN_API_KEY: ${{ secrets.CKAN_API_KEY }}
         run: python scripts/publicar_ckan.py
 
-      - name: Commit alterações
-        uses: stefanzweifel/git-auto-commit-action@v4
-        with:
-          commit_message: "Atualização automática de dados terceirizados"
 
