@@ -1,40 +1,64 @@
-# scripts/gerar_datapackage.py
+import requests
 import json
 from pathlib import Path
 
-DATA_DIR = Path("data")
-OUTPUT = Path("datapackage/datapackage.json")
+CKAN_URL = "https://www.dados.mg.gov.br"
+API_KEY = os.environ.get("CKAN_API_KEY")
 
-resources = []
+DATASET_NAME = "empregados-terceirizados"
+OWNER_ORG = "controladoria-geral-do-estado-cge"
 
-for csv in sorted(DATA_DIR.glob("terceirizados_*.csv")):
-    ano = csv.stem.split("_")[-1]
+datapackage = json.loads(Path("datapackage/datapackage.json").read_text(encoding="utf-8"))
 
-    resources.append({
-        "name": f"terceirizados-{ano}",
-        "title": f"Empregados Terceirizados – {ano}",
-        "path": f"data/{csv.name}",
-        "format": "csv",
-        "mediatype": "text/csv",
-        "encoding": "utf-8",
-        "description": f"Dados de empregados terceirizados do ano de {ano}"
-    })
-
-datapackage = {
-    "profile": "data-package",
-    "name": "empregados-terceirizados",
-    "title": "Empregados Terceirizados do Governo de Minas Gerais",
-    "owner_org": "controladoria-geral-do-estado-cge",
-    "license": {
-        "type": "CC-BY-4.0",
-        "title": "Creative Commons Attribution 4.0",
-        "url": "https://creativecommons.org/licenses/by/4.0/"
-    },
-    "resources": resources
+headers = {
+    "Authorization": API_KEY,
+    "Content-Type": "application/json"
 }
 
-OUTPUT.parent.mkdir(exist_ok=True)
-OUTPUT.write_text(
-    json.dumps(datapackage, indent=2, ensure_ascii=False),
-    encoding="utf-8"
+# =============================
+# Criar ou atualizar dataset
+# =============================
+dataset_payload = {
+    "name": DATASET_NAME,
+    "title": datapackage["title"],
+    "notes": datapackage.get("description", ""),
+    "owner_org": OWNER_ORG,
+    "license_id": "cc-by",
+    "state": "active"
+}
+
+r = requests.post(
+    f"{CKAN_URL}/api/3/action/package_create",
+    headers=headers,
+    json=dataset_payload
 )
+
+if r.status_code != 200:
+    # tenta atualizar
+    r = requests.post(
+        f"{CKAN_URL}/api/3/action/package_update",
+        headers=headers,
+        json=dataset_payload
+    )
+
+print("Dataset CKAN ok.")
+
+# =============================
+# Criar recursos
+# =============================
+for res in datapackage["resources"]:
+    resource_payload = {
+        "package_id": DATASET_NAME,
+        "name": res["title"],
+        "url": f"https://raw.githubusercontent.com/transparencia-mg/empregados_terceirizados/main/{res['path']}",
+        "format": "CSV",
+        "description": res["description"]
+    }
+
+    requests.post(
+        f"{CKAN_URL}/api/3/action/resource_create",
+        headers=headers,
+        json=resource_payload
+    )
+
+print("Recursos publicados no CKAN.")
