@@ -73,11 +73,17 @@ datapackage = {
     "name": "empregados-terceirizados",
     "title": "Empregados Terceirizados do Governo de Minas Gerais",
     "description": "Base anual de empregados terceirizados do Governo do Estado de Minas Gerais.",
+
+    # 👇 OBRIGATÓRIO PARA dpckan
+    "owner_org": "controladoria-geral-do-estado-cge",
+
+    # 👇 Compatibilidade CKAN
     "ckan": {
         "owner_org": "controladoria-geral-do-estado-cge",
         "private": False,
         "state": "active"
     },
+
     "license": {
         "type": "CC-BY-4.0",
         "title": "Creative Commons Attribution 4.0",
@@ -85,7 +91,6 @@ datapackage = {
     },
     "resources": resources
 }
-
 
 OUTPUT.parent.mkdir(exist_ok=True)
 OUTPUT.write_text(
