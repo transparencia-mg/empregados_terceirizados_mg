@@ -23,7 +23,7 @@ Principais funcionalidades:
 
 O dashboard está disponível publicamente em:
 
-👉 **https://transparencia-mg.github.io/empregados_terceirizados/**
+👉 **https://transparencia-mg.github.io/empregados_terceirizados_mg/**
 
 Não é necessário login ou autenticação para acesso aos dados.
 
