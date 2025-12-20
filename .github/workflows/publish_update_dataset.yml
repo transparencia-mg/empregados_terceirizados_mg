@@ -6,7 +6,6 @@ on:
       - main
     paths:
       - 'data/**'
-      - 'dataset/**'
       - 'datapackage/**'
       - 'scripts/**'
   workflow_dispatch:
@@ -16,65 +15,43 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-      # ===============================
-      # CHECKOUT
-      # ===============================
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # ===============================
-      # PYTHON
-      # ===============================
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
 
-      # ===============================
-      # DEPENDÊNCIAS
-      # ===============================
       - name: Install packages
         run: |
           python -m pip install --upgrade pip
-          pip uninstall numpy -y || true
-          pip install numpy==1.23.5 --no-cache-dir
           pip install dpckan frictionless requests
 
-      # ===============================
-      # GERAR DATAPACKAGE.JSON
-      # ===============================
-      - name: Gerar datapackage.json
+      # 🔹 Gera o datapackage.json (SEU PADRÃO)
+      - name: Create datapackage.json
         run: |
           python scripts/gerar_datapackage.py
 
-      # ===============================
-      # COMMIT DATAPACKAGE
-      # ===============================
       - name: Commit datapackage.json
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: Atualiza datapackage.json automaticamente
           file_pattern: datapackage/datapackage.json
 
-      # ===============================
-      # NORMALIZAR NOME DO ATOR
-      # (EXATAMENTE COMO O TEMPLATE)
-      # ===============================
+      # 🔹 Normaliza o nome do ator (IGUAL AO OUTRO REPO)
       - id: string
-        name: Normalizar nome do ator
         uses: ASzc/change-string-case-action@v1
         with:
           string: ${{ github.actor }}
 
-      # ===============================
-      # CKAN — CREATE (SE NÃO EXISTIR)
-      # ===============================
-      - name: Create dataset in CKAN (se não existir)
+      # 🔹 Cria dataset no CKAN (se NÃO existir)
+      - name: Create dataset in CKAN (if not exists)
         continue-on-error: true
         env:
-          CKAN_HOST: https://www.dados.mg.gov.br
+          CKAN_HOST: ${{ secrets.CKAN_HOST }}
           CKAN_KEY: ${{ secrets[format('CKAN_KEY_{0}', steps.string.outputs.uppercase)] }}
         run: |
           dpckan \
@@ -84,13 +61,11 @@ jobs:
             --ckan-key "$CKAN_KEY" \
             dataset create
 
-      # ===============================
-      # CKAN — UPDATE (SE EXISTIR)
-      # ===============================
-      - name: Update dataset in CKAN (se existir)
-        if: ${{ ! cancelled() }}
+      # 🔹 Atualiza dataset no CKAN (se existir)
+      - name: Update dataset in CKAN (if exists)
+        if: ${{ !cancelled() }}
         env:
-          CKAN_HOST: https://www.dados.mg.gov.br
+          CKAN_HOST: ${{ secrets.CKAN_HOST }}
           CKAN_KEY: ${{ secrets[format('CKAN_KEY_{0}', steps.string.outputs.uppercase)] }}
         run: |
           dpckan \
