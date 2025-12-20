@@ -29,26 +29,19 @@ jobs:
       - name: Gerar datapackage.json
         run: python scripts/gerar_datapackage.py
 
-      - name: Commit datapackage.json
+      - name: Commit datapackage.json (se mudou)
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: Atualiza datapackage.json automaticamente
           file_pattern: datapackage/datapackage.json
 
-      - name: Publicar / Atualizar dataset no CKAN
+      - name: Atualizar dataset no CKAN
         env:
           CKAN_HOST: https://www.dados.mg.gov.br
           CKAN_KEY: ${{ secrets.CKAN_KEY }}
         run: |
           dpckan \
-            --datastore \
             --datapackage datapackage/datapackage.json \
             --ckan-host "$CKAN_HOST" \
             --ckan-key "$CKAN_KEY" \
-            dataset update || \
-          dpckan \
-            --datastore \
-            --datapackage datapackage/datapackage.json \
-            --ckan-host "$CKAN_HOST" \
-            --ckan-key "$CKAN_KEY" \
-            dataset create
+            dataset update
