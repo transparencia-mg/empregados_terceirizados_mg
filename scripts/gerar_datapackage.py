@@ -1,101 +1,79 @@
-# scripts/gerar_datapackage.py
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import json
 from pathlib import Path
+
+# =========================
+# CONFIGURAÇÕES
+# =========================
 
 DATA_DIR = Path("data")
 OUTPUT = Path("datapackage/datapackage.json")
 
+DATASET_NAME = "empregados-terceirizados-mg"
+OWNER_ORG = "controladoria-geral-do-estado-cge"
+
 # =========================
-# Schema padrão dos CSVs
+# COLETA DOS CSVs
 # =========================
-SCHEMA_FIELDS = [
-    {
-        "name": "matricula",
-        "title": "Matrícula do empregado terceirizado",
-        "type": "string",
-        "description": "Identificador do empregado terceirizado"
-    },
-    {
-        "name": "nome",
-        "title": "Nome completo do empregado terceirizado",
-        "type": "string"
-    },
-    {
-        "name": "orgao",
-        "title": "Órgão de trabalho do empregado",
-        "type": "string"
-    },
-    {
-        "name": "cargo",
-        "title": "Cargo exercido pelo empregado",
-        "type": "string"
-    },
-    {
-        "name": "empresa",
-        "title": "Nome da empresa terceirizada",
-        "type": "string"
-    },
-    {
-        "name": "cnpj_empresa",
-        "title": "CNPJ da empresa terceirizada",
-        "type": "string",
-        "description": "CNPJ com 14 dígitos, sem formatação"
-    },
-    {
-        "name": "mes_referencia",
-        "title": "Mês de referência do contrato",
-        "type": "string",
-        "description": "Mês do contrato no formato abreviado (ex: jan-25)"
-    }
-]
 
 resources = []
 
-for csv in sorted(DATA_DIR.glob("terceirizados_*.csv")):
+csv_files = sorted(DATA_DIR.glob("terceirizados_*.csv"))
+
+if not csv_files:
+    raise RuntimeError("❌ Nenhum arquivo terceirizados_*.csv encontrado na pasta data/")
+
+for csv in csv_files:
     ano = csv.stem.split("_")[-1]
 
     resources.append({
         "name": f"terceirizados-{ano}",
         "title": f"Empregados Terceirizados – {ano}",
         "path": f"data/{csv.name}",
+        "profile": "tabular-data-resource",
+        "scheme": "file",
         "format": "csv",
-        "mediatype": "text/csv",
         "encoding": "utf-8",
+        "mediatype": "text/csv",
         "description": f"Dados de empregados terceirizados do ano de {ano}",
         "schema": {
-            "fields": SCHEMA_FIELDS,
+            "fields": [
+                {"name": "matricula", "type": "string", "title": "Matrícula"},
+                {"name": "nome", "type": "string", "title": "Nome"},
+                {"name": "orgao", "type": "string", "title": "Órgão"},
+                {"name": "cargo", "type": "string", "title": "Cargo"},
+                {"name": "empresa", "type": "string", "title": "Empresa"},
+                {"name": "cnpj_empresa", "type": "string", "title": "CNPJ da empresa"},
+                {"name": "mes_referencia", "type": "string", "title": "Mês de referência"}
+            ],
             "primaryKey": ["matricula", "mes_referencia"]
         }
     })
 
+# =========================
+# DATAPACKAGE FINAL
+# =========================
+
 datapackage = {
     "profile": "data-package",
-    "name": "empregados-terceirizados-mg",
+    "name": DATASET_NAME,
     "title": "Empregados Terceirizados do Governo de Minas Gerais",
     "description": "Base anual de empregados terceirizados do Governo do Estado de Minas Gerais.",
-
-    # 👇 OBRIGATÓRIO PARA dpckan
-    "owner_org": "controladoria-geral-do-estado-cge",
-
-    # 👇 Compatibilidade CKAN
-    "ckan": {
-        "owner_org": "controladoria-geral-do-estado-cge",
-        "private": False,
-        "state": "active"
-    },
-
-    "license": {
-        "type": "CC-BY-4.0",
-        "title": "Creative Commons Attribution 4.0",
-        "url": "https://creativecommons.org/licenses/by/4.0/"
-    },
+    "owner_org": OWNER_ORG,
     "resources": resources
 }
 
-OUTPUT.parent.mkdir(exist_ok=True)
+# =========================
+# ESCRITA EM DISCO
+# =========================
+
+OUTPUT.parent.mkdir(parents=True, exist_ok=True)
 OUTPUT.write_text(
     json.dumps(datapackage, indent=2, ensure_ascii=False),
     encoding="utf-8"
 )
 
-print("datapackage.json gerado com schema das colunas.")
+print(f"✔ datapackage.json gerado com {len(resources)} recursos")
+
