@@ -3206,7 +3206,7 @@
                 const url = URL.createObjectURL(blob);
                 
                 link.setAttribute('href', url);
-                link.setAttribute('download', `empregados_terceirizados_${year}.csv`);
+                link.setAttribute('download', `empregados_terceirizados_mg_${year}.csv`);
                 link.style.visibility = 'hidden';
                 document.body.appendChild(link);
                 link.click();
@@ -3380,7 +3380,7 @@ window.filtrarPorOrgao = function(orgao) {
             const url = URL.createObjectURL(blob);
             
             link.setAttribute('href', url);
-            link.setAttribute('download', `empregados_terceirizados_${currentYear}_${currentMonth}.csv`);
+            link.setAttribute('download', `empregados_terceirizados_mg_${currentYear}_${currentMonth}.csv`);
             link.style.visibility = 'hidden';
             document.body.appendChild(link);
             link.click();
@@ -3389,5 +3389,6 @@ window.filtrarPorOrgao = function(orgao) {
     </script>
 </body>
 </html>
+
 
 
