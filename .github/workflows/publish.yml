@@ -1,4 +1,4 @@
-name: Publicar dados no CKAN
+name: Publicar dataset no CKAN (dados.mg.gov.br)
 
 on:
   push:
@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  publish_ckan:
+  publish:
     runs-on: ubuntu-22.04
 
     steps:
@@ -29,17 +29,22 @@ jobs:
           pip install requests
 
       - name: Gerar datapackage.json
-        run: python scripts/gerar_datapackage.py
+        run: |
+          python scripts/gerar_datapackage.py
 
-      - name: Commit do datapackage.json (se mudou)
+      - name: Validar existência do datapackage
+        run: |
+          test -f datapackage/datapackage.json || (echo "❌ datapackage.json não encontrado" && exit 1)
+
+      - name: Commit do datapackage.json (se houver alteração)
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: Atualiza datapackage.json automaticamente
+          file_pattern: datapackage/datapackage.json
 
-      - name: Publicar no CKAN (dados.mg.gov.br)
+      - name: Publicar no CKAN (Portal de Dados MG)
         env:
           CKAN_HOST: https://www.dados.mg.gov.br
           CKAN_KEY: ${{ secrets.CKAN_KEY }}
         run: |
           python scripts/publicar_ckan.py
-
