@@ -4,9 +4,9 @@
 import json
 from pathlib import Path
 
-# =========================
+# ============================
 # CONFIGURAÇÕES
-# =========================
+# ============================
 
 DATA_DIR = Path("data")
 OUTPUT = Path("datapackage/datapackage.json")
@@ -14,9 +14,9 @@ OUTPUT = Path("datapackage/datapackage.json")
 DATASET_NAME = "empregados-terceirizados-mg"
 OWNER_ORG = "controladoria-geral-do-estado-cge"
 
-# =========================
+# ============================
 # COLETA DOS CSVs
-# =========================
+# ============================
 
 resources = []
 
@@ -37,7 +37,7 @@ for csv in csv_files:
         "format": "csv",
         "encoding": "utf-8",
         "mediatype": "text/csv",
-        "description": f"Dados de empregados terceirizados do ano de {ano}",
+        "description": f"Dados de empregados terceirizados do Governo de Minas Gerais – ano de {ano}",
         "schema": {
             "fields": [
                 {"name": "matricula", "type": "string", "title": "Matrícula"},
@@ -45,16 +45,16 @@ for csv in csv_files:
                 {"name": "orgao", "type": "string", "title": "Órgão"},
                 {"name": "cargo", "type": "string", "title": "Cargo"},
                 {"name": "empresa", "type": "string", "title": "Empresa"},
-                {"name": "cnpj_empresa", "type": "string", "title": "CNPJ da empresa"},
+                {"name": "cnpj_empresa", "type": "string", "title": "CNPJ da Empresa"},
                 {"name": "mes_referencia", "type": "string", "title": "Mês de referência"}
             ],
             "primaryKey": ["matricula", "mes_referencia"]
         }
     })
 
-# =========================
+# ============================
 # DATAPACKAGE FINAL
-# =========================
+# ============================
 
 datapackage = {
     "profile": "data-package",
@@ -65,9 +65,9 @@ datapackage = {
     "resources": resources
 }
 
-# =========================
-# ESCRITA EM DISCO
-# =========================
+# ============================
+# GRAVAÇÃO
+# ============================
 
 OUTPUT.parent.mkdir(parents=True, exist_ok=True)
 OUTPUT.write_text(
@@ -75,5 +75,4 @@ OUTPUT.write_text(
     encoding="utf-8"
 )
 
-print(f"✔ datapackage.json gerado com {len(resources)} recursos")
-
+print(f"✔ datapackage.json gerado com sucesso ({len(resources)} recursos)")
