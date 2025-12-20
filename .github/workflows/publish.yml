@@ -1,9 +1,14 @@
-name: CKAN
+name: Publicar dados no CKAN
 
 on:
   push:
     branches:
       - main
+    paths:
+      - 'data/**'
+      - 'datapackage/**'
+      - 'scripts/**'
+  workflow_dispatch:
 
 jobs:
   publish_update:
@@ -62,4 +67,5 @@ jobs:
       --ckan-host "$CKAN_HOST" \
       --ckan-key "$CKAN_KEY" \
       dataset update
+
 
