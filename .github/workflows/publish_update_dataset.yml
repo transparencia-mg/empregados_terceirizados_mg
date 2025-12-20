@@ -24,86 +24,90 @@ jobs:
         with:
           python-version: "3.9"
 
-      - name: Instalar dependências
+      - name: Instalar dependências do sistema
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq curl
+
+      - name: Instalar dependências Python
         run: |
           python -m pip install --upgrade pip
           pip install ckanapi
 
-      # (opcional, mas recomendado)
       - name: Verificar datapackage.json
         run: |
           test -f datapackage/datapackage.json || (echo "❌ datapackage.json não encontrado" && exit 1)
 
-      - name: Publicar dataset e recursos no CKAN
+      - name: Publicar dataset e recursos CSV no CKAN
         env:
           CKAN_KEY: ${{ secrets.CKAN_KEY }}
         run: |
           python scripts/publish_ckan.py
 
-- name: Publicar datapackage.json como recurso
-  env:
-    CKAN_HOST: https://www.dados.mg.gov.br
-    CKAN_KEY: ${{ secrets.CKAN_KEY }}
-    DATASET: empregados-terceirizados-mg
-    GITHUB_REPO: transparencia-mg/empregados_terceirizados_mg
-    GITHUB_BRANCH: main
-  run: |
-    set -e
+      - name: Publicar datapackage.json como recurso no CKAN
+        env:
+          CKAN_HOST: https://www.dados.mg.gov.br
+          CKAN_KEY: ${{ secrets.CKAN_KEY }}
+          DATASET: empregados-terceirizados-mg
+          GITHUB_REPO: transparencia-mg/empregados_terceirizados_mg
+          GITHUB_BRANCH: main
+        run: |
+          set -e
 
-    NAME="datapackage-json"
-    TITLE="Datapackage do conjunto de dados"
-    URL="https://raw.githubusercontent.com/$GITHUB_REPO/$GITHUB_BRANCH/datapackage/datapackage.json"
-    DESC="Arquivo datapackage.json com metadados, schema e definição dos recursos do dataset."
+          NAME="datapackage-json"
+          TITLE="Datapackage do conjunto de dados"
+          URL="https://raw.githubusercontent.com/$GITHUB_REPO/$GITHUB_BRANCH/datapackage/datapackage.json"
+          DESC="Arquivo datapackage.json com metadados, schema e definição dos recursos do dataset."
 
-    SEARCH=$(curl -s -X POST "$CKAN_HOST/api/3/action/resource_search" \
-      -H "Authorization: $CKAN_KEY" \
-      -H "Content-Type: application/json" \
-      -d "{\"query\":\"name:$NAME\",\"package_id\":\"$DATASET\"}")
+          SEARCH=$(curl -s -X POST "$CKAN_HOST/api/3/action/resource_search" \
+            -H "Authorization: $CKAN_KEY" \
+            -H "Content-Type: application/json" \
+            -d "{\"query\":\"name:$NAME\",\"package_id\":\"$DATASET\"}")
 
-    COUNT=$(echo "$SEARCH" | jq '.result.count')
+          COUNT=$(echo "$SEARCH" | jq '.result.count')
 
-    if [ "$COUNT" -gt 0 ]; then
-      ID=$(echo "$SEARCH" | jq -r '.result.results[0].id')
-      ACTION="resource_update"
-      PAYLOAD=$(jq -n \
-        --arg id "$ID" \
-        --arg pkg "$DATASET" \
-        --arg name "$NAME" \
-        --arg title "$TITLE" \
-        --arg url "$URL" \
-        --arg desc "$DESC" \
-        '{
-          id: $id,
-          package_id: $pkg,
-          name: $name,
-          title: $title,
-          url: $url,
-          url_type: "link",
-          format: "JSON",
-          description: $desc
-        }')
-      echo "🔄 Atualizando datapackage.json"
-    else
-      ACTION="resource_create"
-      PAYLOAD=$(jq -n \
-        --arg pkg "$DATASET" \
-        --arg name "$NAME" \
-        --arg title "$TITLE" \
-        --arg url "$URL" \
-        --arg desc "$DESC" \
-        '{
-          package_id: $pkg,
-          name: $name,
-          title: $title,
-          url: $url,
-          url_type: "link",
-          format: "JSON",
-          description: $desc
-        }')
-      echo "🆕 Criando datapackage.json"
-    fi
+          if [ "$COUNT" -gt 0 ]; then
+            ID=$(echo "$SEARCH" | jq -r '.result.results[0].id')
+            ACTION="resource_update"
+            PAYLOAD=$(jq -n \
+              --arg id "$ID" \
+              --arg pkg "$DATASET" \
+              --arg name "$NAME" \
+              --arg title "$TITLE" \
+              --arg url "$URL" \
+              --arg desc "$DESC" \
+              '{
+                id: $id,
+                package_id: $pkg,
+                name: $name,
+                title: $title,
+                url: $url,
+                url_type: "link",
+                format: "JSON",
+                description: $desc
+              }')
+            echo "🔄 Atualizando datapackage.json"
+          else
+            ACTION="resource_create"
+            PAYLOAD=$(jq -n \
+              --arg pkg "$DATASET" \
+              --arg name "$NAME" \
+              --arg title "$TITLE" \
+              --arg url "$URL" \
+              --arg desc "$DESC" \
+              '{
+                package_id: $pkg,
+                name: $name,
+                title: $title,
+                url: $url,
+                url_type: "link",
+                format: "JSON",
+                description: $desc
+              }')
+            echo "🆕 Criando datapackage.json"
+          fi
 
-    curl -s -X POST "$CKAN_HOST/api/3/action/$ACTION" \
-      -H "Authorization: $CKAN_KEY" \
-      -H "Content-Type: application/json" \
-      -d "$PAYLOAD" | jq '.success'
+          curl -s -X POST "$CKAN_HOST/api/3/action/$ACTION" \
+            -H "Authorization: $CKAN_KEY" \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD" | jq '.success'
