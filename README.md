@@ -1,5 +1,3 @@
-# 📊 Dashboard de Empregados Terceirizados – Governo de Minas Gerais
-
 Dashboard interativo para visualização, consulta e download de dados públicos sobre **empregados terceirizados** do Governo do Estado de Minas Gerais, com base em arquivos CSV padronizados e publicação em dados abertos.
 
 ---
